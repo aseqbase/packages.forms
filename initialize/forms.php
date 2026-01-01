@@ -5,21 +5,18 @@ use MiMFa\Library\Convert;
 use MiMFa\Library\Local;
 use MiMFa\Library\Struct;
 use MiMFa\Module\Form;
-$menus = [
-    "Forms" => [
-        "Name" => "FORMS",
-        "Path" => "/admin/content/forms",
-        "Description" => "To manage all 'forms'",
-        "Image" => "check-square"
-    ]
-];
 if (isset(\_::$Front->MainMenus["Admin-Content"]["Items"])) {
+    $menus = [
+        "Forms" => [
+            "Name" => "FORMS",
+            "Path" => "/admin/content/forms",
+            "Description" => "To manage all 'forms'",
+            "Image" => "check-square"
+        ]
+    ];
     $menus["Access"] = \_::$User->AdminAccess;
     \_::$Front->MainMenus["Admin-Content"]["Items"] += $menus;
     \_::$Front->SideMenus["Admin-Content"]["Items"] += $menus;
-} else {
-    \_::$Front->MainMenus = \_::$Front->MainMenus + $menus;
-    \_::$Front->SideMenus = \_::$Front->SideMenus + $menus;
 }
 
 \_::$Router->On("form")->Get(function () {
@@ -31,8 +28,6 @@ if (isset(\_::$Front->MainMenus["Admin-Content"]["Items"])) {
             "WindowTitle" => $fm["Title"],
             "Content" => function () use ($fm) {
                 module("Form");
-                if ($fm["Content"])
-                    yield Struct::Convert($fm["Content"]);
                 $form = new Form(
                     title: $fm["Title"],
                     image: $fm["Image"],
@@ -44,6 +39,7 @@ if (isset(\_::$Front->MainMenus["Admin-Content"]["Items"])) {
                 $form->ResetLabel =
                     $form->CancelLabel =
                     $form->SubmitLabel = null;
+                $form->Content = Struct::Convert($fm["Content"]);
                 $form->Access = $fm["Access"];
                 $form->ReceiverEmail = $fm["Email"];
                 $form->Attributes = Convert::FromJson($fm["Attributes"]) ?: [];
