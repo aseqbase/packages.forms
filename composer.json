@@ -1,5 +1,5 @@
 {
-    "name":"Form",
+    "name":"aseqbase/form",
     "description":"To make and manage custom forms",
     "type": "package",
     "license": "GPL-3.0-only",
