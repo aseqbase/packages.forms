@@ -2,9 +2,11 @@
 namespace MiMFa;
 class Bootstrap
 {
+    public static $OnlyBase = false;
     public static $Arguments = [];
     public static $Configurations = [];
     public static $ServerPID = null;
+
     public static $ConfigurationsFile = 'bootstrap.json';
     public static $DataBaseSchemaFile = 'schema.sql';
     public static $DestinationDirectory = null;
@@ -134,6 +136,10 @@ class Bootstrap
             self::$DestinationDirectory .= DIRECTORY_SEPARATOR;
         self::$Configurations["Destination"]["Path"] = self::$DestinationDirectory;
 
+        self::$OnlyBase = (self::$Configurations["Basic"]??0) == 1? true:false;
+        self::GetBooleanInput("Do you want to install only basic directories and files?", $force, self::$OnlyBase, self::$OnlyBase, "basic");
+        self::$Configurations["Basic"] = self::$OnlyBase?1:0;
+
         $source = dirname(__DIR__) . DIRECTORY_SEPARATOR;// Source folder (your framework package root)
         $isInVendor = preg_match("/vendor[\/\\\]aseqbase[\/\\\][\w\s\-\.\~]+[\/\\\]$/i", $source);
         if ($isInVendor) {
@@ -159,7 +165,8 @@ class Bootstrap
                 if (
                     str_starts_with($relPath, "~") ||
                     str_starts_with($relPath, ".git" . DIRECTORY_SEPARATOR) ||
-                    str_starts_with($relPath, "vendor" . DIRECTORY_SEPARATOR)
+                    str_starts_with($relPath, "vendor" . DIRECTORY_SEPARATOR) ||
+                    (self::$OnlyBase && str_starts_with($relPath, "aseq" . DIRECTORY_SEPARATOR))
                 )
                     continue;
                 $targetPath = self::$DestinationDirectory . $relPath;
@@ -675,6 +682,12 @@ class Front extends AseqFront") . " {
         if (preg_match("/^\"[\w\W]*[^\\\]\"$/", trim($input), $matches))
             return $matches[0];
         return preg_match(self::$ScriptsPattern, $input) ? $input : "\"$input\"";
+    }
+    public static function GetBooleanInput($message, $force = false, $default = null, &$input = null, $argument = "arg")
+    {
+        self::GetInput($message." (Y:yes, N:no)", $force, $default, $res, $argument);
+        $res = trim(strtolower($res??""));
+        return $input = in_array($res, ["yes", "true", "y"])?true:(in_array($res, ["no", "false", "n"])?false:null);
     }
     public static function SetOutput($message = null)
     {
